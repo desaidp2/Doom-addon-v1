@@ -1013,6 +1013,17 @@ function matchesRequestedMedia(stream, mediaInfo, parsed) {
     return false;
   }
 
+  // Provider labels can contain extra branding/quality tokens. Accept an exact
+  // requested title + year in the displayed stream name, while retaining the
+  // episode and conflicting-year checks.
+  const streamName = normalizeMatchText(stream && stream.name || "");
+  const expectedName = normalizeMatchText(mediaInfo.title);
+  if (expectedName && streamName.includes(expectedName) &&
+      (!mediaInfo.year || streamName.includes(String(mediaInfo.year))) &&
+      !hasDifferentMovieYear(streamName, mediaInfo, parsed)) {
+    return true;
+  }
+
   const expectedTokens = Array.from(new Set([
     ...titleTokens(mediaInfo.title),
     ...titleTokens(mediaInfo.originalTitle)
