@@ -1735,16 +1735,22 @@ async function getStreams(type, id, options = {}) {
         delay(Math.max(0, STREAM_FAST_PROVIDER_WAIT_MS))
       ]);
 
-      const providerResults = state.results.filter(Boolean);
-      const streams = await finalizeStreams(providerResults, {
+      // The initial Stremio response must not wait for slow remote playback probes.
+      // Keep only clearly formed HTTPS/direct media URLs here; full validation
+      // still runs in the background and populates the regular cache.
+      const providerResults = state.results;
+      const candidateStreams = streamsFromProviderResults(providerResults, {
         logFailures: false,
-        mediaInfo: state.mediaInfo,
-        parsed: state.parsed,
-        providerEntries: entries,
-        probeOnlyRequired: true,
-        probeTimeoutMs: STREAM_FAST_PROBE_TIMEOUT_MS,
-        qualityBand
+        providerEntries: entries
       });
+      const passthrough = candidateStreams.filter(isPassthroughStream);
+      const regular = candidateStreams.filter((stream) => !isPassthroughStream(stream));
+      const matched = filterRequestedMediaStreams(regular, state.mediaInfo, state.parsed);
+      const acceptable = dedupeStreams(matched).filter(isFastAcceptableStream);
+      const streams = sortStreams(
+        filterStreamsByQualityBand([...acceptable, ...passthrough], qualityBand),
+        { qualityBand }
+      );
 
       if (streams.length > 0) {
         console.log(`[Stream fast] Returning ${streams.length} early streams for ${key}`);
