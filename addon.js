@@ -10,7 +10,7 @@ const STREAM_PROBE_TIMEOUT_MS = Number(process.env.STREAM_PROBE_TIMEOUT_MS || 80
 const STREAM_PROBE_CONCURRENCY = Number(process.env.STREAM_PROBE_CONCURRENCY || 6);
 const STREAM_CACHE_TTL_MS = Number(process.env.STREAM_CACHE_TTL_MS || 10 * 60 * 1000);
 const STREAM_CACHE_MAX_ENTRIES = Number(process.env.STREAM_CACHE_MAX_ENTRIES || 100);
-const STREAM_FAST_PROVIDER_WAIT_MS = Number(process.env.STREAM_FAST_PROVIDER_WAIT_MS || 8000);
+const STREAM_FAST_PROVIDER_WAIT_MS = Number(process.env.STREAM_FAST_PROVIDER_WAIT_MS || 3000);
 const STREAM_FAST_PROBE_TIMEOUT_MS = Number(process.env.STREAM_FAST_PROBE_TIMEOUT_MS || 2500);
 const MEDIAFUSION_PROBE_TIMEOUT_MS = Number(process.env.MEDIAFUSION_PROBE_TIMEOUT_MS || 8000);
 
@@ -1639,6 +1639,7 @@ async function startStreamBuild(type, id, entries, requestContext = {}) {
     return null;
   }
 
+  const lookupStartedAt = Date.now();
   let tmdbId;
   let mediaInfo = null;
   try {
@@ -1646,7 +1647,9 @@ async function startStreamBuild(type, id, entries, requestContext = {}) {
     if (!tmdbId) {
       return null;
     }
+    console.log(`[Stream timing] IMDb-to-TMDB ${parsed.imdbId} ${Date.now() - lookupStartedAt}ms`);
     mediaInfo = await resolveMediaInfo(tmdbId, parsed.mediaType);
+    console.log(`[Stream timing] Metadata ready ${parsed.imdbId} ${Date.now() - lookupStartedAt}ms`);
   } catch (error) {
     console.error(`[TMDB] ${error.message || error}`);
     return null;
