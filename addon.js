@@ -726,10 +726,12 @@ async function filterPlayableStreams(streams, options = {}) {
         if (probe.ok) {
           filtered.push(stream);
         } else {
-          console.log(`[Stream probe] Rejected unplayable source: ${stream.name}`);
+          console.log(`[Stream probe] Rejected unplayable source: ${stream.name} (provider=${stream.behaviorHints?.doomProviderId || "unknown"}, urlHost=${(() => { try { return new URL(stream.url).hostname; } catch { return "invalid"; } })()})`);
         }
       } catch (error) {
-        console.log(`[Stream probe] Rejected ${stream.name}: ${error.message || error}`);
+        const message = String(error.message || error);
+        const reason = /timed?\s*out|timeout|abort/i.test(message) ? "timeout" : "request-error";
+        console.log(`[Stream probe] Rejected ${stream.name} (reason=${reason}, provider=${stream.behaviorHints?.doomProviderId || "unknown"}): ${message}`);
       }
     }
   }
