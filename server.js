@@ -48,7 +48,7 @@ function sendFile(response, statusCode, filePath, contentType, cacheSeconds = 0)
 }
 
 function parseStreamPath(pathname) {
-  const match = pathname.match(/^\/(?:addons\/([^/]+)\/)?stream\/([^/]+)\/(.+)\.json$/);
+  const match = pathname.match(/^\/(?:v2\/)?(?:addons\/([^/]+)\/)?stream\/([^/]+)\/(.+)\.json$/);
   if (!match) {
     return null;
   }
@@ -303,7 +303,7 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
-    if (url.pathname === "/manifest.json") {
+    if (url.pathname === "/manifest.json" || url.pathname === "/v2/manifest.json") {
       sendJson(response, 200, manifest, 0);
       return;
     }
