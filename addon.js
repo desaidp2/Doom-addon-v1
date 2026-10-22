@@ -1760,11 +1760,29 @@ async function getStreams(type, id, options = {}) {
         return streams;
       }
 
-      return fullPromise;
+      // Give slower providers one short extra window, rather than blocking the
+      // client on all providers and their playback probes (often 50+ seconds).
+      await Promise.race([state.donePromise, delay(9000)]);
+      const laterCandidates = streamsFromProviderResults(state.results, {
+        logFailures: false,
+        providerEntries: entries
+      });
+      const laterPassthrough = laterCandidates.filter(isPassthroughStream);
+      const laterMatched = filterRequestedMediaStreams(
+        laterCandidates.filter((stream) => !isPassthroughStream(stream)),
+        state.mediaInfo,
+        state.parsed
+      );
+      const laterStreams = sortStreams(filterStreamsByQualityBand([
+        ...dedupeStreams(laterMatched).filter(isFastAcceptableStream),
+        ...laterPassthrough
+      ], qualityBand), { qualityBand });
+      console.log(`[Stream fast] Second batch ${key} count=${laterStreams.length}`);
+      return laterStreams;
     })
     .catch((error) => {
       console.error(`[Stream fast] ${key}: ${error.message || error}`);
-      return fullPromise;
+      return [];
     });
 
   streamInflight.set(key, { fullPromise, fastPromise });
