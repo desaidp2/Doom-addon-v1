@@ -304,7 +304,7 @@ const server = http.createServer(async (request, response) => {
     }
 
     if (url.pathname === "/manifest.json") {
-      sendJson(response, 200, manifest, 3600);
+      sendJson(response, 200, manifest, 0);
       return;
     }
 
