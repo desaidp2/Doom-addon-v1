@@ -321,11 +321,20 @@ const server = http.createServer(async (request, response) => {
 
     const streamRequest = parseStreamPath(url.pathname);
     if (streamRequest) {
+      const startedAt = Date.now();
+      const requestKey = `${streamRequest.scope}:${streamRequest.type}:${streamRequest.id}`;
+      console.log(`[Stream HTTP] Started ${requestKey} client=${String(request.headers["user-agent"] || "unknown").slice(0, 110)}`);
+      response.once("close", () => {
+        if (!response.writableFinished) {
+          console.log(`[Stream HTTP] Client disconnected ${requestKey} after ${Date.now() - startedAt}ms`);
+        }
+      });
       const streams = await getStreams(streamRequest.type, streamRequest.id, {
         scope: streamRequest.scope,
         requestHeaders: request.headers
       });
       if (!streams) {
+        console.log(`[Stream HTTP] Not found ${requestKey} after ${Date.now() - startedAt}ms`);
         sendJson(response, 404, { error: "Add-on group not found" });
         return;
       }
@@ -333,7 +342,8 @@ const server = http.createServer(async (request, response) => {
       const responseStreams = scopeHasProvider(streamRequest.scope, "aiostreams")
         ? redirectAioStreams(streams, streamRequest, url.origin)
         : streams;
-      sendJson(response, 200, { streams: responseStreams }, cacheSeconds);
+      console.log(`[Stream HTTP] Responding ${requestKey} count=${responseStreams.length} elapsed=${Date.now() - startedAt}ms disconnected=${response.destroyed}`);
+      if (!response.destroyed) sendJson(response, 200, { streams: responseStreams }, cacheSeconds);
       return;
     }
 
