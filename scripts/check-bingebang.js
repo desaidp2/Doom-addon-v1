@@ -1,34 +1,19 @@
 "use strict";
-
-// Read-only connectivity diagnostic. Does not scrape, bypass challenges, or expose stream URLs.
-// Usage: node scripts/check-bingebang.js
+// Read-only site connectivity check. Does not bypass anti-bot controls.
 const targets = [
-  "https://bingebang.st/",
-  "https://bingebang.st/explore"
+ "https://bingebang.st/",
+ "https://67movies.st/",
+ "https://movienerds.site/",
+ "https://pressplayx.to/"
 ];
-
 async function check(url) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      redirect: "follow",
-      signal: controller.signal,
-      headers: { "Accept": "text/html,application/json;q=0.9,*/*;q=0.8" }
-    });
-    console.log(JSON.stringify({
-      target: url,
-      status: response.status,
-      finalHost: new URL(response.url).hostname,
-      contentType: response.headers.get("content-type"),
-      cloudflareRayPresent: response.headers.has("cf-ray")
-    }));
-    await response.body?.cancel();
-  } catch (error) {
-    console.log(JSON.stringify({ target: url, error: error.name, detail: error.message }));
-  } finally {
-    clearTimeout(timer);
-  }
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),10000);
+ try {
+  const r=await fetch(url,{redirect:"follow",signal:controller.signal,headers:{"Accept":"text/html,application/json;q=0.9,*/*;q=0.8"}});
+  console.log(JSON.stringify({target:url,status:r.status,finalHost:new URL(r.url).hostname,contentType:r.headers.get("content-type"),cloudflareRayPresent:r.headers.has("cf-ray")}));
+  await r.body?.cancel();
+ } catch(e){console.log(JSON.stringify({target:url,error:e.name,detail:e.message}));}
+ finally{clearTimeout(timeout);}
 }
-(async () => { for (const target of targets) await check(target); })();
+(async()=>{for(const url of targets)await check(url)})();
