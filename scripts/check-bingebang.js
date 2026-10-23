@@ -4,7 +4,12 @@ const targets = [
  "https://bingebang.st/",
  "https://67movies.st/",
  "https://movienerds.site/",
- "https://pressplayx.to/"
+ "https://pressplayx.to/",
+ "https://anicine.sbs/",
+ "https://arrowtv.net/",
+ "https://cineruv.website/",
+ "https://milkbox.zapto.org/",
+ "https://www.bilibili.tv/"
 ];
 async function check(url) {
  const controller=new AbortController();
