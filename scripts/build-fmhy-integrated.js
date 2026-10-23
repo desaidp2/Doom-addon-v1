@@ -26,7 +26,7 @@ const startMark="    const result = await this.engine.findStreams(";
 if(!s.includes(startMark))throw Error('Engine request code changed');
 s=s.replace(startMark,"    const matrixStartedAt = Date.now();\n"+startMark);
 const cacheDecl="export class RuntimeStremioAdapter implements StremioStreamProvider {";
-const cacheCode="const matrixResultCache = new Map<string, {expires: number; promise: Promise<any>}>();\n";
+const cacheCode="const matrixResultCache = new Map<string, {expires: number; promise: ReturnType<StreamEngine['findStreams']>}>();\n";
 if(!s.includes(cacheDecl))throw Error('adapter class changed');
 s=s.replace(cacheDecl,cacheCode+cacheDecl);
 const originalFind="    const result = await this.engine.findStreams(parseStremioMediaRequest(type, rawId), { excludedSourceIds: Object.keys(ctx.config).flatMap(key => key.startsWith('disableFmhySource_') ? [key.slice('disableFmhySource_'.length)] : []) });";
