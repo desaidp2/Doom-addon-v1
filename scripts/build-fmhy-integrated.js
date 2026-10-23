@@ -7,7 +7,7 @@ let s=fs.readFileSync(file,'utf8');
 const old="  const player = stream.hostExtractor?.trim() || 'N/A';";
 if(!s.includes(old))throw Error('Upstream formatter changed');
 s=s.replace(old,'');
-const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplayx/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
+const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplay(?:x)?/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
 s=s.replace("  return { url: stream.url.href",addition+"\n  return { url: stream.url.href");
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
 const after='name: `${matrix} · ${resolution}`, title: `${language} · ${brand}`';
@@ -22,6 +22,13 @@ const filtered=`return { streams: result.streams.filter(stream => {
   (String(a.language??'').toLowerCase().startsWith('en')?0:1)-(String(b.language??'').toLowerCase().startsWith('en')?0:1)
 ).map((stream) => {`;
 s=s.replace(mapping,filtered);
+const startMark="    const result = await this.engine.findStreams(";
+if(!s.includes(startMark))throw Error('Engine request code changed');
+s=s.replace(startMark,"    const matrixStartedAt = Date.now();\n"+startMark);
+const returnsMark="    return { streams: result.streams.filter(stream => {";
+if(!s.includes(returnsMark))throw Error('Result return changed');
+s=s.replace(returnsMark,"    console.info('[FMHY Integrated] '+type+'/'+rawId+' upstream='+result.streams.length+' elapsedMs='+(Date.now()-matrixStartedAt)+' providers='+JSON.stringify(Object.fromEntries([...new Set(result.streams.map(x=>x.sourceId))].map(id=>[id,result.streams.filter(x=>x.sourceId===id).length]))));\n"+returnsMark);
+
 fs.writeFileSync(file,s);
 execFileSync('npm',['install'],{cwd:root,stdio:'inherit'});
 execFileSync('npm',['run','build'],{cwd:root,stdio:'inherit'});
