@@ -1,0 +1,43 @@
+{
+  "purpose": "Staged candidate list only. NOT wired into Stremio, no playback claims.",
+  "excluded": [
+    "67Movies",
+    "ArrowTV",
+    "BingeBang"
+  ],
+  "candidates": [
+    {
+      "name": "MovieNerds",
+      "domain": "movienerds.site",
+      "siteHttp": 200
+    },
+    {
+      "name": "PressPlayX",
+      "domain": "pressplayx.to",
+      "siteHttp": 200
+    },
+    {
+      "name": "Cineruv",
+      "domain": "cineruv.website",
+      "siteHttp": 200
+    },
+    {
+      "name": "MilkBox",
+      "domain": "milkbox.zapto.org",
+      "siteHttp": 200
+    },
+    {
+      "name": "BiliBili",
+      "domain": "bilibili.tv",
+      "siteHttp": 200
+    },
+    {
+      "name": "AniCine",
+      "domain": "anicine.sbs",
+      "siteHttp": 200,
+      "enabled": false,
+      "note": "Anime-focused; user previously requested excluding it"
+    }
+  ],
+  "note": "Homepage HTTP 200 is not proof of extractability, playable streams, languages or 4K. Implement dedicated resolvers before enabling."
+}
