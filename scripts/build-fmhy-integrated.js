@@ -25,6 +25,15 @@ s=s.replace(mapping,filtered);
 const startMark="    const result = await this.engine.findStreams(";
 if(!s.includes(startMark))throw Error('Engine request code changed');
 s=s.replace(startMark,"    const matrixStartedAt = Date.now();\n"+startMark);
+const cacheDecl="export class RuntimeStremioAdapter implements StremioStreamProvider {";
+const cacheCode="const matrixResultCache = new Map<string, {expires: number; promise: Promise<any>}>();\\n";
+if(!s.includes(cacheDecl))throw Error('adapter class changed');
+s=s.replace(cacheDecl,cacheCode+cacheDecl);
+const originalFind="    const result = await this.engine.findStreams(parseStremioMediaRequest(type, rawId), { excludedSourceIds: Object.keys(ctx.config).flatMap(key => key.startsWith('disableFmhySource_') ? [key.slice('disableFmhySource_'.length)] : []) });";
+if(!s.includes(originalFind))throw Error('engine find call changed');
+const cachedFind="    const excludedSourceIds = Object.keys(ctx.config).flatMap(key => key.startsWith('disableFmhySource_') ? [key.slice('disableFmhySource_'.length)] : []);\\n    const matrixCacheKey = type + ':' + rawId + ':' + excludedSourceIds.sort().join(',');\\n    let matrixCached = matrixResultCache.get(matrixCacheKey);\\n    if (!matrixCached || matrixCached.expires < Date.now()) {\\n      if(matrixResultCache.size > 100) matrixResultCache.clear();\\n      const promise = this.engine.findStreams(parseStremioMediaRequest(type, rawId), { excludedSourceIds });\\n      matrixCached = {expires: Date.now()+120000, promise};\\n      matrixResultCache.set(matrixCacheKey, matrixCached);\\n      promise.catch(() => matrixResultCache.delete(matrixCacheKey));\\n    }\\n    const result = await matrixCached.promise;";
+s=s.replace(originalFind,cachedFind);
+
 const returnsMark="    return { streams: result.streams.filter(stream => {";
 if(!s.includes(returnsMark))throw Error('Result return changed');
 s=s.replace(returnsMark,"    console.info('[FMHY Integrated] '+type+'/'+rawId+' upstream='+result.streams.length+' elapsedMs='+(Date.now()-matrixStartedAt)+' providers='+JSON.stringify(Object.fromEntries([...new Set(result.streams.map(x=>x.sourceId))].map(id=>[id,result.streams.filter(x=>x.sourceId===id).length]))));\n"+returnsMark);
