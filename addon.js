@@ -1760,6 +1760,7 @@ async function getStreams(type, id, options = {}) {
         return streams;
       }
 
+      console.log(`[Stream fast] First batch empty for ${key}; completed=${state.results.filter(Boolean).length}/${entries.length}`);
       // Give slower providers one short extra window, rather than blocking the
       // client on all providers and their playback probes (often 50+ seconds).
       await Promise.race([state.donePromise, delay(9000)]);
@@ -1785,8 +1786,13 @@ async function getStreams(type, id, options = {}) {
       return [];
     });
 
+  // Stremio must never wait for the full playback-probe pass. The full
+  // build continues independently and fills the cache for later requests.
   streamInflight.set(key, { fullPromise, fastPromise });
-  return Promise.race([fullPromise, fastPromise]);
+  return fastPromise.then((streams) => {
+    console.log(`[Stream initial] ${key} count=${streams.length}`);
+    return streams;
+  });
 }
 
 module.exports = {
