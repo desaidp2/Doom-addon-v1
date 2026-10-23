@@ -39,8 +39,8 @@
       "name": "AniCine",
       "domain": "anicine.sbs",
       "siteHttp": 200,
-      "enabled": false,
-      "note": "Anime-focused; user previously requested excluding it"
+      "enabled": true,
+      "note": "Included by user request for household anime viewing; actual playback not yet verified."
     }
   ],
   "note": "Homepage HTTP 200 is not proof of extractability, playable streams, languages or 4K. Implement dedicated resolvers before enabling."
