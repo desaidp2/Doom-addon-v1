@@ -8,7 +8,7 @@ const old="  const player = stream.hostExtractor?.trim() || 'N/A';";
 if(!s.includes(old))throw Error('Upstream formatter changed');
 s=s.replace(old,'');
 const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplayx/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
-s=s.replace("  const website =",addition+"\n  const website =");
+s=s.replace("  return { url: stream.url.href",addition+"\n  return { url: stream.url.href");
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
 const after='name: `${matrix} · ${resolution}`, title: `${language} · ${brand}`';
 if(!s.includes(before))throw Error('Stremio return format changed');
