@@ -1,11 +1,15 @@
 {
   "purpose": "Staged candidate list only. NOT wired into Stremio, no playback claims.",
   "excluded": [
-    "67Movies",
     "ArrowTV",
     "BingeBang"
   ],
   "candidates": [
+    {
+      "name": "67Movies",
+      "domain": "67movies.st",
+      "siteHttp": 200
+    },
     {
       "name": "MovieNerds",
       "domain": "movienerds.site",
