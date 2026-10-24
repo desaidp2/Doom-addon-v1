@@ -7,6 +7,7 @@ export type Candidate = { source: "VidCore" | "VidFast" | "RiveStream"; url: str
 export type Source = Candidate["source"];
 
 const SOURCES: Source[] = ["VidCore", "VidFast", "RiveStream"];
+// Adapter-only parsing; source resolvers have NOT been verified or launched.
 const isMedia = (u: string) => /^https:\/\//.test(u) && (/\.m3u8(?:\?|$)/i.test(u) || /\.mpd(?:\?|$)/i.test(u));
 export function parseResolverEvents(source: Source, payload: string): Candidate[] {
   const streams: Candidate[] = [];
