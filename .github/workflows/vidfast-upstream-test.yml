@@ -1,0 +1,52 @@
+name: VidFast upstream resolver smoke test
+on:
+  workflow_dispatch:
+  push:
+    branches: [three-providers-research]
+    paths:
+      - '.github/workflows/vidfast-upstream-test.yml'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch open-source resolver and install dependencies
+        run: |
+          git clone --depth 1 https://github.com/sharoon7171/vidfast-pro-stream-resolver.git resolver
+          cd resolver
+          npm ci --ignore-scripts
+      - name: Run VidFast resolver with one TMDB movie
+        shell: bash
+        run: |
+          cd resolver
+          (npm start > /tmp/vidfast-server.log 2>&1 &)
+          sleep 8
+          set +e
+          curl --fail --silent --show-error --max-time 80 "http://127.0.0.1:3000/api/resolve?type=movie&id=361743" -o /tmp/vidfast-events.ndjson
+          rc=$?
+          set -e
+          echo "HTTP request exit status: $rc"
+          if [ "$rc" -ne 0 ]; then
+            echo "No response from resolver. Server log tail:"
+            tail -30 /tmp/vidfast-server.log
+            exit 1
+          fi
+          node -e '
+            const fs = require("node:fs");
+            const input = fs.readFileSync("/tmp/vidfast-events.ndjson","utf8");
+            let events=0,media=0;
+            for(const line of input.split("\\n")) {
+              if(!line.trim())continue;
+              try{
+                const d=JSON.parse(line);
+                events++;
+                const u=d?.server?.url || d?.url;
+                if(typeof u === "string" && /^https:\\/\\//.test(u) && (/\\.m3u8(?:\\?|$)/i.test(u) || /\\.mpd(?:\\?|$)/i.test(u))) media++;
+              }catch{}
+            }
+            console.log("NDJSON events:",events,"HLS/DASH candidates:",media);
+            if(media===0)process.exitCode=1;
+          '
