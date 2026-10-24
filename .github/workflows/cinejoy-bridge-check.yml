@@ -1,0 +1,13 @@
+name: CineJoy bridge compile check
+on:
+  push:
+    branches: [cinejoy-integration-test]
+  workflow_dispatch:
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build isolated CineJoy bridge (no deployment)
+        run: docker build -f experiments/cinejoy-bridge/Dockerfile -t cinejoy-bridge-prototype .
