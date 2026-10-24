@@ -1,0 +1,15 @@
+name: Three-provider adapter checks
+on:
+  push:
+    branches: [three-providers-research]
+  workflow_dispatch:
+jobs:
+  adapter-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate isolated adapters with synthetic NDJSON
+        run: node --experimental-strip-types --test experiments/three-providers/resolver-adapters.test.mjs
