@@ -43,7 +43,6 @@ fs.writeFileSync(file,s);
 /* Optional MovieBox eighth provider: isolated from seven FMHY extractors. */
 fs.copyFileSync('scripts/moviebox-provider.ts.txt',root+'/src/addon/stremio-adapter/moviebox-provider.ts');
 const importAnchor="import type { Stream } from 'stremio-addon-sdk';";
-if(!s.includes("const file=root+'/src/addon/stremio-adapter/runtime-adapter.ts';"))throw Error('missing file anchor');
 let patched=fs.readFileSync(file,'utf8');
 if(!patched.includes(importAnchor))throw Error('MovieBox import anchor not found');
 patched=patched.replace(importAnchor,importAnchor+"\nimport { movieboxStreams } from './moviebox-provider';");
