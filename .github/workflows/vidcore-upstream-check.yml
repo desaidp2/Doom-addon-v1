@@ -1,0 +1,25 @@
+name: VidCore upstream compile verification
+on:
+  push:
+    branches: [three-providers-research]
+    paths: ['.github/workflows/vidcore-upstream-check.yml']
+  pull_request:
+    branches: [bingebang-test]
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Clone VidCore accessible upstream
+        run: git clone --depth 1 https://github.com/advmtaxi/vidcore.git upstream
+      - name: Install and compile VidCore
+        run: |
+          cd upstream
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run build
+      - name: Report local API documented route
+        run: echo 'Compile only. /api/resolve?type=movie&id=361743 is NOT yet live-tested.'
