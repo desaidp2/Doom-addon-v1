@@ -13,3 +13,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build isolated CineJoy bridge (no deployment)
         run: docker build -f experiments/cinejoy-bridge/Dockerfile -t cinejoy-bridge-prototype .
+      - name: Smoke-test CineJoy resolution (TMDB 361743)
+        run: |
+          docker run -d --name cinejoy-smoke cinejoy-bridge-prototype
+          sleep 3
+          docker exec cinejoy-smoke sh -c 'wget -q -T 100 -O /tmp/response.json "http://127.0.0.1:8788/resolve?tmdb=361743" && grep -q '\''"url"'\'' /tmp/response.json'
+        timeout-minutes: 3
