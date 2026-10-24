@@ -55,7 +55,8 @@ async function retrieve(type,id){
  let found=await api('POST','/wefeed-mobile-bff/subject-api/search/v2',body,token);
  token=found.token||token;
  let items=found.data.results?.flatMap(x=>x.subjects||[])||found.data.items||[];
- const matches=items.filter(x=>clean(x.title)===clean(title)&&(type!=='movie'||!year||String(x.year)===year)).slice(0,3);
+ const matches=items.filter(x=>clean(x.title||x.name)===clean(title)&&(type!=='movie'||!year||String(x.year)===year)).slice(0,3);
+ console.info('[MovieBox diagnostic] '+imdb+' title='+JSON.stringify(title)+' resultItems='+items.length+' matches='+matches.length+' samples='+JSON.stringify(items.slice(0,3).map(x=>({title:x.title||x.name,year:x.year,subjectId:x.subjectId||x.subject_id}))));
  let all=[];
  for(const item of matches){
    let subjectId=item.subjectId||item.subject_id;
@@ -66,6 +67,7 @@ async function retrieve(type,id){
      const result=await api('GET','/wefeed-mobile-bff/subject-api/resource?'+q,undefined,token);
      token=result.token||token;
      let files=result.data.list||result.data.fileList||result.data.file_list||[];
+     console.info('[MovieBox diagnostic] '+imdb+' resourceItems='+files.length+' fields='+JSON.stringify(files[0]?Object.keys(files[0]):[]));
      for(const f of files){
        const url=f.resourceLink||f.url;
        if(!safeUrl(url))continue;
