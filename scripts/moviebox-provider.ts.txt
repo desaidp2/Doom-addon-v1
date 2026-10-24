@@ -1,0 +1,93 @@
+// MovieBox eighth-provider adapter. Runs within existing FMHY Node process.
+// Upstream client protocol based on mesamirh/stremio-moviebox (MIT).
+// @ts-nocheck
+import {createHash, createHmac, randomBytes, randomUUID} from 'node:crypto';
+const bases=['https://api6.aoneroom.com','https://api5.aoneroom.com','https://api4.aoneroom.com','https://api4sg.aoneroom.com','https://api3.aoneroom.com','https://api6sg.aoneroom.com'];
+const key=Buffer.from('76iRl07s0xSN9jqmEWAt79EBJZulIQIsV64FZr2O','base64');
+const cache=new Map();
+const md5=x=>createHash('md5').update(x).digest('hex');
+const clean=s=>String(s||'').replace(/\[[^\]]*\]|\([^)]*\)/g,'').trim().toLowerCase();
+const timeout=ms=>AbortSignal.timeout(ms);
+const safeUrl=u=>{try{let x=new URL(u);return x.protocol==='https:'||x.protocol==='http:'}catch{return false}};
+const ua='com.community.oneroom/50020046 (Linux; U; Android 13; en_US; Redmi; Build/TQ2A.230405.003; Cronet/135.0.7012.3)';
+const clientInfo=JSON.stringify({package_name:'com.community.oneroom',version_name:'3.0.03.0529.03',version_code:50020046,os:'android',os_version:'13',install_ch:'ps',device_id:randomBytes(16).toString('hex'),install_store:'ps',gaid:randomUUID(),brand:'Redmi',model:'2201117TY',system_language:'en',net:'NETWORK_WIFI',region:'US',timezone:'Asia/Kolkata',sp_code:'40401','X-Play-Mode':'2'});
+function headers(method,url,body,token){
+ const ts=Date.now(),u=new URL(url);
+ const q=[...u.searchParams.entries()].sort((a,b)=>a[0].localeCompare(b[0])).map(([k,v])=>k+'='+v).join('&');
+ const canonical=u.pathname+(q?'?'+q:'');
+ const bodyText=body===undefined?undefined:JSON.stringify(body);
+ const bytes=bodyText===undefined?null:Buffer.from(bodyText);
+ const raw=[method,'application/json','application/json',bytes?String(bytes.length):'',String(ts),bytes?md5(bytes.subarray(0,102400)):'',canonical].join('\n');
+ const sig=createHmac('md5',key).update(raw).digest('base64');
+ let h={'User-Agent':ua,'Accept':'application/json','Content-Type':'application/json','X-Client-Token':ts+','+md5(String(ts).split('').reverse().join('')),'x-tr-signature':ts+'|2|'+sig,'X-Client-Info':clientInfo,'X-Client-Status':'0'};
+ if(token)h.Authorization='Bearer '+token;
+ return {h,bodyText};
+}
+async function api(method,path,payload,token){
+ let err;
+ for(const base of bases){
+   const url=base+path;
+   const {h,bodyText}=headers(method,url,payload,token);
+   try{
+     const res=await fetch(url,{method,headers:h,...(bodyText!==undefined?{body:bodyText}:{}),signal:timeout(5500)});
+     if(!res.ok){err=Error('MovieBox HTTP '+res.status);continue}
+     const json=await res.json();
+     if(json.code===0 || (json.code===undefined && json.data)){return {data:json.data||json,token:(()=>{try{return JSON.parse(res.headers.get('x-user')||'{}').token}catch{return token}})()}}
+     err=Error('MovieBox API '+json.code);
+   }catch(e){err=e}
+ }
+ throw err||Error('MovieBox upstream unavailable');
+}
+async function retrieve(type,id){
+ if(type!=='movie'&&type!=='series')return [];
+ const bits=id.split(':'),imdb=bits[0];
+ if(!/^tt\d+$/.test(imdb))return [];
+ const ep=type==='series'?Number(bits.at(-1)):0,se=type==='series'?Number(bits.at(-2)):0;
+ if(type==='series'&&(!ep||!se))return [];
+ const metaRes=await fetch('https://v3-cinemeta.strem.io/meta/'+type+'/'+imdb+'.json',{signal:timeout(5500)});
+ if(!metaRes.ok)throw Error('Cinemeta HTTP '+metaRes.status);
+ const meta=(await metaRes.json()).meta||{};
+ const title=meta.name||'',year=String(meta.releaseInfo||meta.year||'').match(/\d{4}/)?.[0];
+ if(!title)return [];
+ let token='';
+ try{let warm=await api('GET','/wefeed-mobile-bff/tab-operating?page=1&tabId=0&version=',undefined,token);token=warm.token||''}catch{}
+ const body={keyword:title,page:1,perPage:20,subjectType:type==='movie'?1:2,tabId:'All'};
+ let found=await api('POST','/wefeed-mobile-bff/subject-api/search/v2',body,token);
+ token=found.token||token;
+ let items=found.data.results?.flatMap(x=>x.subjects||[])||found.data.items||[];
+ const matches=items.filter(x=>clean(x.title)===clean(title)&&(type!=='movie'||!year||String(x.year)===year)).slice(0,3);
+ let all=[];
+ for(const item of matches){
+   let subjectId=item.subjectId||item.subject_id;
+   if(!subjectId)continue;
+   const q=new URLSearchParams({subjectId:String(subjectId),resolution:'0',page:'1',perPage:'30'});
+   if(type==='series'){q.set('se',String(se));q.set('epFrom',String(ep));q.set('epTo',String(ep));q.set('all','0');q.set('pagerMode','0')}
+   try{
+     const result=await api('GET','/wefeed-mobile-bff/subject-api/resource?'+q,undefined,token);
+     token=result.token||token;
+     let files=result.data.list||result.data.fileList||result.data.file_list||[];
+     for(const f of files){
+       const url=f.resourceLink||f.url;
+       if(!safeUrl(url))continue;
+       if(type==='series'&&(Number(f.se)!==se||Number(f.ep)!==ep))continue;
+       const height=Number(f.resolution)||0;
+       const lang=String(f.language||f.lanName||'');
+       if(lang&&!/english|hindi|^en$|^hi$/i.test(lang))continue;
+       all.push({url,name:'🎬 MOVIEBOX · '+(height?height+'p':'HD'),title:'MovieBox CDN'+(lang?' · '+lang:'')+(f.size?' · '+(Number(f.size)/1073741824).toFixed(2)+' GB':''),behaviorHints:{notWebReady:true}});
+     }
+   }catch(e){console.warn('[MovieBox] resource fetch failed',String(e))}
+ }
+ return [...new Map(all.map(x=>[x.url.split('?')[0],x])).values()].sort((a,b)=>Number(b.name.match(/\d+/)?.[0]||0)-Number(a.name.match(/\d+/)?.[0]||0));
+}
+export async function movieboxStreams(type,id){
+ if(process.env.MOVIEBOX_ENABLED!=='true')return [];
+ const k=type+':'+id;let hit=cache.get(k);
+ if(hit&&hit.until>Date.now())return hit.value;
+ try{
+   const streams=await retrieve(type,id);
+   if(cache.size>100)cache.clear();
+   cache.set(k,{until:Date.now()+120000,value:streams});
+   console.info('[MovieBox] '+k+' streams='+streams.length);
+   return streams;
+ }catch(e){console.warn('[MovieBox] '+k+' failed:',String(e));return []}
+}
