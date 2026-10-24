@@ -34,7 +34,7 @@ jobs:
           set -e
           echo "curl exit code: $rc"
           if [ -f /tmp/vidcore-response.ndjson ]; then
-            node -e 'const fs=require("fs"); const s=fs.readFileSync("/tmp/vidcore-response.ndjson","utf8"); let events=0,hls=0; for(const line of s.split(String.fromCharCode(10))){try{const x=JSON.parse(line);events++;const u=x?.server?.url||x?.url;if(typeof u==="string"&&u.startsWith("https://")&&u.includes(".m3u8"))hls++;}catch{}} console.log("NDJSON events:",events,"HLS candidates:",hls); for(const line of s.split(String.fromCharCode(10))){try{const x=JSON.parse(line);console.log("event:",JSON.stringify({type:x.type,event:x.event,status:x.status,error:typeof x.error==="string"?x.error.slice(0,130):undefined,message:typeof x.message==="string"?x.message.slice(0,130):undefined,keys:Object.keys(x).slice(0,12)}));}catch{}} if(!hls)process.exitCode=1;'
+            node -e 'const fs=require("fs"); const s=fs.readFileSync("/tmp/vidcore-response.ndjson","utf8"); let events=0,hls=0; for(const line of s.split(String.fromCharCode(10))){try{const x=JSON.parse(line);events++;const u=x?.server?.url||x?.url;if(typeof u==="string"&&u.startsWith("https://")&&u.includes(".m3u8"))hls++;}catch{}} console.log("NDJSON events:",events,"HLS candidates:",hls); for(const line of s.split(String.fromCharCode(10))){try{const x=JSON.parse(line);console.log("event:",JSON.stringify({type:x.type,event:x.event,status:x.status,stage:x.stage,error:typeof x.error==="string"?x.error.slice(0,130):undefined,message:typeof x.message==="string"?x.message.slice(0,130):undefined,keys:Object.keys(x).slice(0,12)}));}catch{}} if(!hls)process.exitCode=1;'
           else
             echo "No response file"
             exit 1
