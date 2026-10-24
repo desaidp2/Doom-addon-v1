@@ -21,5 +21,25 @@ jobs:
           cd upstream
           npm install --ignore-scripts --no-audit --no-fund
           npm run build
-      - name: Report local API documented route
-        run: echo 'Compile only. /api/resolve?type=movie&id=361743 is NOT yet live-tested.'
+      - name: Smoke test local VidCore resolver for Top Gun
+        shell: bash
+        timeout-minutes: 3
+        run: |
+          cd upstream
+          (npm run serve > /tmp/vidcore-server.log 2>&1 &)
+          sleep 5
+          set +e
+          curl --silent --show-error --max-time 90 -o /tmp/vidcore-response.ndjson -w 'HTTP status: %{http_code}\n' 'http://127.0.0.1:7860/api/resolve?type=movie&id=361743'
+          rc=$?
+          set -e
+          echo "curl exit code: $rc"
+          if [ -f /tmp/vidcore-response.ndjson ]; then
+            node -e 'const fs=require("fs"); const s=fs.readFileSync("/tmp/vidcore-response.ndjson","utf8"); let events=0,hls=0; for(const line of s.split(String.fromCharCode(10))){try{const x=JSON.parse(line);events++;const u=x?.server?.url||x?.url;if(typeof u==="string"&&u.startsWith("https://")&&u.includes(".m3u8"))hls++;}catch{}} console.log("NDJSON events:",events,"HLS candidates:",hls);if(!hls)process.exitCode=1;'
+          else
+            echo "No response file"
+            exit 1
+          fi
+          if [ "$rc" -ne 0 ]; then
+            tail -25 /tmp/vidcore-server.log
+            exit 1
+          fi
