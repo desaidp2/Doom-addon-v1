@@ -39,5 +39,21 @@ if(!s.includes(returnsMark))throw Error('Result return changed');
 s=s.replace(returnsMark,"    console.info('[FMHY Integrated] '+type+'/'+rawId+' upstream='+result.streams.length+' elapsedMs='+(Date.now()-matrixStartedAt)+' providers='+JSON.stringify(Object.fromEntries([...new Set(result.streams.map(x=>x.sourceId))].map(id=>[id,result.streams.filter(x=>x.sourceId===id).length]))));\n"+returnsMark);
 
 fs.writeFileSync(file,s);
+
+/* Optional MovieBox eighth provider: isolated from seven FMHY extractors. */
+fs.copyFileSync('scripts/moviebox-provider.ts.txt',root+'/src/addon/stremio-adapter/moviebox-provider.ts');
+const importAnchor="import type { Stream } from 'stremio-addon-sdk';";
+if(!s.includes("const file=root+'/src/addon/stremio-adapter/runtime-adapter.ts';"))throw Error('missing file anchor');
+let patched=fs.readFileSync(file,'utf8');
+if(!patched.includes(importAnchor))throw Error('MovieBox import anchor not found');
+patched=patched.replace(importAnchor,importAnchor+"\nimport { movieboxStreams } from './moviebox-provider';");
+const rAnchor="return { streams: result.streams.filter(stream => {";
+if(!patched.includes(rAnchor))throw Error('MovieBox result anchor not found');
+patched=patched.replace(rAnchor,"const fmhyStreams = result.streams.filter(stream => {");
+const endAnchor="}), diagnostics: [...new Set(result.failures.map(";
+if(!patched.includes(endAnchor))throw Error('MovieBox return anchor not found');
+patched=patched.replace(endAnchor,"});\n    const moviebox = await movieboxStreams(type, rawId);\n    return { streams: [...fmhyStreams, ...moviebox], diagnostics: [...new Set(result.failures.map(");
+fs.writeFileSync(file,patched);
+
 execFileSync('npm',['install'],{cwd:root,stdio:'inherit'});
 execFileSync('npm',['run','build'],{cwd:root,stdio:'inherit'});
