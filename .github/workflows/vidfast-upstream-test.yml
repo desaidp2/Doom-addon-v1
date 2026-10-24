@@ -1,12 +1,6 @@
 name: VidFast upstream resolver smoke test
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [bingebang-test]
-  push:
-    branches: [three-providers-research]
-    paths:
-      - '.github/workflows/vidfast-upstream-test.yml'
 jobs:
   smoke:
     runs-on: ubuntu-latest
