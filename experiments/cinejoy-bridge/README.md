@@ -11,10 +11,10 @@ cd experiments/cinejoy-bridge
 go mod init cinejoy-bridge
 go get github.com/MADPANDA3D/pandaflix@latest
 go run .
-curl -G 'http://127.0.0.1:8788/resolve' --data-urlencode 'media_url=https://cinejoy.to/movie/TMDB_ID'
+curl -G 'http://127.0.0.1:8788/resolve' --data-urlencode 'tmdb=361743'
 ```
 
-The exact supported CineJoy media URL structure must be verified against PandaFlix's `tmdbMediaFromURL` parser before testing; the URL above is illustrative, not a verified title path.
+The bridge accepts a numeric TMDB **movie** ID and uses the `movie|TMDB||` request structure documented in PandaFlix's verification utility. The example ID is an input demonstration; extraction is not yet confirmed.
 
 ## Remaining before live FMHY
 
