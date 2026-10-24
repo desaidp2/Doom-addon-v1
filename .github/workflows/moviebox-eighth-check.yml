@@ -2,6 +2,8 @@ name: MovieBox eighth provider build check
 on:
   push:
     branches: [moviebox-eighth-provider]
+  pull_request:
+    branches: [bingebang-test]
   workflow_dispatch:
 jobs:
   build:
