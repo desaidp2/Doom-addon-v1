@@ -40,6 +40,10 @@ const returnsMark="    return { streams: result.streams.filter(stream => {";
 if(!s.includes(returnsMark))throw Error('Result return changed');
 s=s.replace(returnsMark,"    console.info('[FMHY Integrated] '+type+'/'+rawId+' upstream='+result.streams.length+' elapsedMs='+(Date.now()-matrixStartedAt)+' providers='+JSON.stringify(Object.fromEntries([...new Set(result.streams.map(x=>x.sourceId))].map(id=>[id,result.streams.filter(x=>x.sourceId===id).length]))));\n"+returnsMark);
 
+const failureAnchor="    return { streams: result.streams.filter(stream => {";
+if(!s.includes(failureAnchor))throw Error('FMHY failure-log anchor missing');
+s=s.replace(failureAnchor,"    console.info('[FMHY failures] '+type+'/'+rawId+' '+JSON.stringify(result.failures.map(f => ({code:f.code,stage:f.stage,sourceId:f.sourceId,familyId:f.familyId}))));\n"+failureAnchor);
+
 fs.writeFileSync(file,s);
 
 execFileSync('npm',['install'],{cwd:root,stdio:'inherit'});
