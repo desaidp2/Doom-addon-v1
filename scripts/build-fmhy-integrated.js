@@ -1,6 +1,8 @@
 const {execFileSync}=require('node:child_process');
 const fs=require('node:fs');
 const root='fmhy-core';
+// Render may restore a previous fmhy-core clone from its build cache.
+fs.rmSync(root,{recursive:true,force:true});
 execFileSync('git',['clone','--depth','1','https://github.com/RisPNG/fmhywebstremio.git',root],{stdio:'inherit'});
 const file=root+'/src/addon/stremio-adapter/runtime-adapter.ts';
 let s=fs.readFileSync(file,'utf8');
