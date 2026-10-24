@@ -14,8 +14,18 @@ jobs:
       - name: Build isolated CineJoy bridge (no deployment)
         run: docker build -f experiments/cinejoy-bridge/Dockerfile -t cinejoy-bridge-prototype .
       - name: Smoke-test CineJoy resolution (TMDB 361743)
+        shell: bash
+        timeout-minutes: 3
         run: |
           docker run -d --name cinejoy-smoke cinejoy-bridge-prototype
           sleep 3
-          docker exec cinejoy-smoke sh -c 'wget -q -T 100 -O /tmp/response.json "http://127.0.0.1:8788/resolve?tmdb=361743" && grep -q '\''"url"'\'' /tmp/response.json'
-        timeout-minutes: 3
+          set +e
+          docker exec cinejoy-smoke sh -c 'wget -S -T 100 -O /tmp/response.json "http://127.0.0.1:8788/resolve?tmdb=361743"'
+          rc=$?
+          echo "Resolver exit code: $rc"
+          docker logs cinejoy-smoke 2>&1 | sed -E 's@https?://[^ ]+@[URL_REDACTED]@g'
+          if [ "$rc" -ne 0 ]; then
+            echo "CineJoy resolver failed"
+            exit 1
+          fi
+          docker exec cinejoy-smoke grep -q '"url"' /tmp/response.json
