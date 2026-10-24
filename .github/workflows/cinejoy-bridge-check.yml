@@ -2,6 +2,8 @@ name: CineJoy bridge compile check
 on:
   push:
     branches: [cinejoy-integration-test]
+  pull_request:
+    branches: [bingebang-test]
   workflow_dispatch:
 jobs:
   compile:
