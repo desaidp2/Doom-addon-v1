@@ -12,7 +12,7 @@ s=s.replace(old,'');
 const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplay(?:x)?/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
 s=s.replace("  return { url: stream.url.href",addition+"\n  return { url: stream.url.href");
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
-const after='name: `${matrix} · ${resolution}`, title: `${language} · ${brand}`';
+const after='name: `${matrix} · ${resolution.startsWith("4K") || resolution.startsWith("2160") ? "✦" : resolution.startsWith("1080") ? "◆" : resolution.startsWith("720") ? "◇" : "•"} ${resolution}`, title: `${language} · ${brand}`';
 if(!s.includes(before))throw Error('Stremio return format changed');
 s=s.replace(before,after);
 const mapping='return { streams: result.streams.map((stream) => {';
