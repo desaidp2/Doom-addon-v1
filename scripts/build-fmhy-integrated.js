@@ -10,14 +10,13 @@ const old="  const player = stream.hostExtractor?.trim() || 'N/A';";
 if(!s.includes(old))throw Error('Upstream formatter changed');
 s=s.replace(old,'');
 const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplay(?:x)?/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
-s=s.replace("  return { url: stream.url.href",addition+"\n  return { url: stream.url.href");
+// Batman formatting is resolution-based; no unused Matrix variable is injected.
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
 const after='name: `${resolution.startsWith("8K") || resolution.startsWith("4320") ? "🦇 [8K ULTRA] ║ GOTHAM PRIME" : resolution.startsWith("4K") || resolution.startsWith("2160") ? "🦇 [4K UHD] ║ WAYNE-NET CORE" : resolution.startsWith("1080") ? "🦇 [1080p HD] ║ BAT-RADAR" : resolution.startsWith("720") ? "🃏 [720p] ║ JOKER CHAOS" : /cam/i.test(resolution) ? "🃏 [CAM] ║ JOKER CHAOS" : /480|sd/i.test(resolution) ? "🕸️ [480p] ║ ARKHAM MONITOR" : "❓ [UNKNOWN] ║ RIDDLER MYSTERY"}`, title: `${resolution.startsWith("8K") || resolution.startsWith("4320") ? "🎬 DARK KNIGHT // 4320p ULTRA HD" : resolution.startsWith("4K") || resolution.startsWith("2160") ? "🎬 TACTICAL LINK // 2160p KNIGHTFALL" : resolution.startsWith("1080") ? "🎬 RECON FEED // 1080p HIGH-RES" : resolution.startsWith("720") ? "🎬 JOKER TRANSMISSION // 720p HD" : /cam/i.test(resolution) ? "🎬 BOOTLEG TRANSMISSION // CAM" : /480|sd/i.test(resolution) ? "🎬 CELL CAM // 480p LOW-RES" : "🎬 RESOLUTION NOT DETECTED"}\\\n🔊 ${language || "Audio: Not specified"}\\\n📡 ${brand} · ${website}`}';
 if(!s.includes(before))throw Error('Stremio return format changed');
 s=s.replace(before,after);
 // Provider-specific matrix variable is superseded by resolution-based labels.
-s=s.replace('const matrix = (', 'const _unusedMatrix = (');
-s=s.replace('  const _unusedMatrix = (', '  // const _unusedMatrix = (');
+
 const mapping='return { streams: result.streams.map((stream) => {';
 if(!s.includes(mapping))throw Error('Stream mapping changed');
 const filtered=`return { streams: result.streams.filter(stream => {
