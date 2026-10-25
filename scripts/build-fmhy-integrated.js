@@ -12,7 +12,7 @@ s=s.replace(old,'');
 const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplay(?:x)?/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
 // Batman formatting is resolution-based; no unused Matrix variable is injected.
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
-const after = 'name: `${/4320|8k/i.test(resolution) ? "🦇 [8K ULTRA] ║ GOTHAM PRIME" : /2160|4k/i.test(resolution) ? "🦇 [4K UHD] ║ WAYNE-NET CORE" : /^(?:10[0-9]{2}|11[0-9]{2})p$/i.test(resolution) ? "🦇 [FHD CLASS] ║ BAT-RADAR" : /720/i.test(resolution) ? "🃏 [720p HD] ║ JOKER CHAOS" : "❓ [UNKNOWN] ║ RIDDLER MYSTERY"}`, title: `🎬 ${resolution} · 🔊 ${language} · 📡 ${brand} · ${website}`';
+const after = 'name: `${/4320|8k/i.test(resolution) ? "🦇 GOTHAM PRIME" : /2160|4k/i.test(resolution) ? "🦇 WAYNE-NET CORE" : /^(?:10[0-9]{2}|11[0-9]{2})p$/i.test(resolution) ? "🦇 BAT-RADAR" : /720|7[0-9]{2}/i.test(resolution) ? "🃏 JOKER CHAOS" : "❓ RIDDLER MYSTERY"}\\n${resolution}`, title: `🎬 ${brand}\\n◈ Quality: ${resolution} · Source: ${brand}\\n◎ Audio: ${language === "N/A" ? "Not specified" : language}\\n📡 ${website}\\nGOTHAM ONLINE`';
 if(!s.includes(before))throw Error('Stremio return format changed');
 s=s.replace(before,after);
 // Provider-specific matrix variable is superseded by resolution-based labels.
