@@ -12,7 +12,7 @@ s=s.replace(old,'');
 const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplay(?:x)?/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
 s=s.replace("  return { url: stream.url.href",addition+"\n  return { url: stream.url.href");
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
-const after='name: `${matrix} · ${resolution.startsWith("4K") || resolution.startsWith("2160") ? "✦" : resolution.startsWith("1080") ? "◆" : resolution.startsWith("720") ? "◇" : "•"} ${resolution}`, title: `${language} · ${brand}`';
+const after='name: `${resolution.startsWith("4K") || resolution.startsWith("2160") ? "🕶️ NΞO · ✦ 4K 2160p" : resolution.startsWith("1080") ? "⚡ TRINITY · ◆ 1080p FHD" : resolution.startsWith("720") ? "💊 MORPHΞUS · ◇ 720p HD" : "🕴️ SMITH · ▫ " + resolution}`, title: `${language} · ${brand} · ${resolution.startsWith("4K") || resolution.startsWith("2160") ? "WAKE UP, NEO..." : resolution.startsWith("1080") ? "FOLLOW THE WHITE RABBIT" : resolution.startsWith("720") ? "FREE YOUR MIND" : "MR. ANDERSON..."}`';
 if(!s.includes(before))throw Error('Stremio return format changed');
 s=s.replace(before,after);
 const mapping='return { streams: result.streams.map((stream) => {';
