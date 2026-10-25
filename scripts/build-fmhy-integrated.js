@@ -15,6 +15,9 @@ const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} .
 const after='name: `${resolution.startsWith("4K") || resolution.startsWith("2160") ? "🕶️ NΞO · ✦ 4K 2160p" : resolution.startsWith("1080") ? "⚡ TRINITY · ◆ 1080p FHD" : resolution.startsWith("720") ? "💊 MORPHΞUS · ◇ 720p HD" : "🕴️ SMITH · ▫ " + resolution}`, title: `${language} · ${brand} · ${resolution.startsWith("4K") || resolution.startsWith("2160") ? "WAKE UP, NEO..." : resolution.startsWith("1080") ? "FOLLOW THE WHITE RABBIT" : resolution.startsWith("720") ? "FREE YOUR MIND" : "MR. ANDERSON..."}`';
 if(!s.includes(before))throw Error('Stremio return format changed');
 s=s.replace(before,after);
+// Provider-specific matrix variable is superseded by resolution-based labels.
+s=s.replace('const matrix = (', 'const _unusedMatrix = (');
+s=s.replace('  const _unusedMatrix = (', '  // const _unusedMatrix = (');
 const mapping='return { streams: result.streams.map((stream) => {';
 if(!s.includes(mapping))throw Error('Stream mapping changed');
 const filtered=`return { streams: result.streams.filter(stream => {
