@@ -12,7 +12,7 @@ s=s.replace(old,'');
 const addition="\n  const matrix = ([[/67movies|sixty.seven/i,'🕶️ NEO'],[/movienerds/i,'🕴️ SMITH'],[/pressplay(?:x)?/i,'💊 MORPHEUS'],[/cineruv/i,'⚡ TRINITY'],[/milkbox/i,'🔮 ORACLE'],[/bilibili/i,'♟️ ARCHITECT'],[/anicine/i,'🛡️ SERAPH']] as const).find(([re]) => re.test(brand) || re.test(website))?.[1] ?? '◈ MATRIX';";
 // Batman formatting is resolution-based; no unused Matrix variable is injected.
 const before='name: `${brand} ${resolution}\\n${language}`, title: `${website} . ${player}`';
-const after = 'name: `🦇 BATMAN ${resolution}`, title: `🎬 ${resolution} · 🔊 ${language} · 📡 ${brand}`';
+const after = 'name: `🦇 BATMAN ${resolution}`, title: `🎬 ${resolution} · 🔊 ${language} · 📡 ${brand} · ${website}`';
 if(!s.includes(before))throw Error('Stremio return format changed');
 s=s.replace(before,after);
 // Provider-specific matrix variable is superseded by resolution-based labels.
