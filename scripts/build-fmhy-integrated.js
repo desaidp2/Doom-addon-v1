@@ -4,6 +4,12 @@ const root='fmhy-core';
 // Render may restore a previous fmhy-core clone from its build cache.
 fs.rmSync(root,{recursive:true,force:true});
 execFileSync('git',['clone','--depth','1','https://github.com/RisPNG/fmhywebstremio.git',root],{stdio:'inherit'});
+const manifestFile=root+'/src/utils/manifest.ts';
+let manifestText=fs.readFileSync(manifestFile,'utf8');
+const defaultLogo="logo: 'https://emojiapi.dev/api/v1/spider_web/256.png',";
+if(!manifestText.includes(defaultLogo))throw Error('FMHY manifest logo anchor changed');
+manifestText=manifestText.replace(defaultLogo,"logo: 'https://raw.githubusercontent.com/desaidp2/Doom-addon-v1/bingebang-test/assets/fyml-batman-icon.svg',");
+fs.writeFileSync(manifestFile,manifestText);
 const file=root+'/src/addon/stremio-adapter/runtime-adapter.ts';
 let s=fs.readFileSync(file,'utf8');
 const old="  const player = stream.hostExtractor?.trim() || 'N/A';";
