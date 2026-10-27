@@ -23,7 +23,7 @@
     "tt"
   ],
   "catalogs": [],
-  "logo": "https://doom-addon.zxflix.com/assets/umbrella-icon.png",
+  "logo": "https://raw.githubusercontent.com/desaidp2/Doom-addon-v1/main/assets/doom-reloaded-matrix.svg",
   "behaviorHints": {
     "configurable": false,
     "p2p": false
