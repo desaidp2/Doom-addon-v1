@@ -1214,7 +1214,7 @@ function streamDetailDescription(rawStream, provider) {
   if (videoDetail) lines.push(`🎬 ${videoDetail}`);
   if (audioDetail) lines.push(`🔊 ${audioDetail}`);
   const sourceCode = detailProviderCode(provider);
-  lines.push(`⚡ ${[providerDetailName(provider), sourceCode].filter(Boolean).join(" - ")}`);
+  lines.push(`🟢 ${[(/murph/i.test(provider.name || provider.id || "") ? "AGENT SMITH" : "NEO NETWORK"), sourceCode].filter(Boolean).join(" - ")}`);
   if (size) lines.push(`💾 ${size}`);
 
   return lines.join("\n");
@@ -1356,7 +1356,9 @@ function streamDisplayTitle(rawStream, mediaInfo) {
 }
 
 function cleanStreamName(rawStream, mediaInfo) {
-  return [streamDisplayTitle(rawStream, mediaInfo), streamQualityLabel(rawStream)].filter(Boolean).join(" | ");
+  const resolution = streamQualityLabel(rawStream);
+  const matrixTag = resolution === "2160p" ? "🟢 NEO 4K" : resolution === "1080p" ? "🕶️ MATRIX 1080p" : resolution === "720p" ? "💊 RED PILL 720p" : resolution ? `💻 MATRIX ${resolution}` : "💻 MATRIX AUTO";
+  return [matrixTag, streamDisplayTitle(rawStream, mediaInfo)].filter(Boolean).join(" | ");
 }
 
 function shouldKeepProviderStream(rawStream, provider) {
